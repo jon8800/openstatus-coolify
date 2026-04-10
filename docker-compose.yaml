@@ -2,48 +2,6 @@ volumes:
     libsql-data:
     workflows-data:
 
-x-common-env: &common-env
-    DATABASE_URL: http://libsql:8080
-    DATABASE_AUTH_TOKEN: ""
-    AUTH_SECRET: ${AUTH_SECRET:-changeme-generate-with-openssl-rand-base64-32}
-    AUTH_URL: https://uptime.eugenelominos.com
-    NEXTAUTH_URL: https://uptime.eugenelominos.com
-    AUTH_TRUST_HOST: "true"
-    SELF_HOST: "true"
-    NEXT_PUBLIC_URL: ${NEXT_PUBLIC_URL:-https://uptime.eugenelominos.com}
-    NODE_ENV: production
-    FLY_REGION: self-hosted
-    RESEND_API_KEY: ${RESEND_API_KEY:-placeholder}
-    # GitHub OAuth
-    AUTH_GITHUB_ID: "Ov23liwUnubrWftg3J12"
-    AUTH_GITHUB_SECRET: "242b74d68045b8a77493a77a0a45b28050f92afa"
-    # Optional services - placeholders to prevent validation errors
-    STRIPE_SECRET_KEY: ""
-    NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: ""
-    STRIPE_WEBHOOK_SECRET_KEY: ""
-    PROJECT_ID_VERCEL: ""
-    TEAM_ID_VERCEL: ""
-    VERCEL_AUTH_BEARER_TOKEN: ""
-    TINY_BIRD_API_KEY: ""
-    TINYBIRD_URL: http://tinybird-local:7181
-    CRON_SECRET: "openstatus-self-hosted-cron-secret"
-    UNKEY_TOKEN: ""
-    UNKEY_API_ID: ""
-    UPSTASH_REDIS_REST_URL: ""
-    UPSTASH_REDIS_REST_TOKEN: ""
-    QSTASH_CURRENT_SIGNING_KEY: ""
-    QSTASH_NEXT_SIGNING_KEY: ""
-    QSTASH_TOKEN: ""
-    QSTASH_URL: ""
-    BLOB_READ_WRITE_TOKEN: ""
-    SUPER_ADMIN_TOKEN: ""
-    SCREENSHOT_SERVICE_URL: ""
-    OPENSTATUS_INGEST_URL: ""
-    NEXT_PUBLIC_OPENPANEL_CLIENT_ID: ""
-    OPENPANEL_CLIENT_SECRET: ""
-    NEXT_PUBLIC_SENTRY_DSN: ""
-    SENTRY_AUTH_TOKEN: ""
-
 services:
     libsql:
         image: ghcr.io/tursodatabase/libsql-server:latest
@@ -52,47 +10,14 @@ services:
         volumes:
             - libsql-data:/var/lib/sqld
         environment:
-            - SQLD_NODE=primary
-        healthcheck:
-            test:
-                [
-                    "CMD-SHELL",
-                    "perl -e 'use IO::Socket::INET; exit(IO::Socket::INET->new(PeerAddr=>\"127.0.0.1:8080\",Timeout=>1) ? 0 : 1);'",
-                ]
-            interval: 5s
-            timeout: 3s
-            retries: 10
-            start_period: 5s
+            SQLD_NODE: primary
         restart: unless-stopped
-
-    db-migrate:
-        image: oven/bun:1.3.11
-        working_dir: /app
-        environment:
-            DATABASE_URL: http://libsql:8080
-            DATABASE_AUTH_TOKEN: ""
-        depends_on:
-            libsql:
-                condition: service_healthy
-        entrypoint: ["sh", "-c"]
-        command:
-            - |
-              echo "Cloning OpenStatus repo for migrations..."
-              apt-get update -qq && apt-get install -y -qq git > /dev/null 2>&1
-              git clone --depth 1 https://github.com/openstatusHQ/openstatus.git /app/openstatus
-              cd /app/openstatus
-              bun install --frozen-lockfile
-              cd packages/db
-              echo "Running database migrations..."
-              bun src/migrate.mts
-              echo "Migrations complete!"
-        restart: "no"
 
     tinybird-local:
         image: tinybirdco/tinybird-local:latest
         platform: linux/amd64
         environment:
-            - COMPATIBILITY_MODE=1
+            COMPATIBILITY_MODE: "1"
         restart: unless-stopped
 
     workflows:
@@ -100,14 +25,88 @@ services:
         volumes:
             - workflows-data:/app/data
         environment:
-            <<: *common-env
+            DATABASE_URL: http://libsql:8080
+            DATABASE_AUTH_TOKEN: ""
+            AUTH_SECRET: "ky7A+ktxQ3qA3WYOkRS0At44yu89c/2OrBVrpCg8fzc="
+            AUTH_URL: https://uptime.eugenelominos.com
+            NEXTAUTH_URL: https://uptime.eugenelominos.com
+            AUTH_TRUST_HOST: "true"
+            SELF_HOST: "true"
+            NEXT_PUBLIC_URL: https://uptime.eugenelominos.com
+            NODE_ENV: production
+            FLY_REGION: self-hosted
+            RESEND_API_KEY: placeholder
+            AUTH_GITHUB_ID: "Ov23liwUnubrWftg3J12"
+            AUTH_GITHUB_SECRET: "242b74d68045b8a77493a77a0a45b28050f92afa"
+            STRIPE_SECRET_KEY: ""
+            NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: ""
+            STRIPE_WEBHOOK_SECRET_KEY: ""
+            PROJECT_ID_VERCEL: ""
+            TEAM_ID_VERCEL: ""
+            VERCEL_AUTH_BEARER_TOKEN: ""
+            TINY_BIRD_API_KEY: ""
+            TINYBIRD_URL: http://tinybird-local:7181
+            CRON_SECRET: openstatus-self-hosted-cron-secret
+            UNKEY_TOKEN: ""
+            UNKEY_API_ID: ""
+            UPSTASH_REDIS_REST_URL: ""
+            UPSTASH_REDIS_REST_TOKEN: ""
+            QSTASH_CURRENT_SIGNING_KEY: ""
+            QSTASH_NEXT_SIGNING_KEY: ""
+            QSTASH_TOKEN: ""
+            QSTASH_URL: ""
+            BLOB_READ_WRITE_TOKEN: ""
+            SUPER_ADMIN_TOKEN: ""
+            SCREENSHOT_SERVICE_URL: ""
+            OPENSTATUS_INGEST_URL: ""
+            NEXT_PUBLIC_OPENPANEL_CLIENT_ID: ""
+            OPENPANEL_CLIENT_SECRET: ""
+            NEXT_PUBLIC_SENTRY_DSN: ""
+            SENTRY_AUTH_TOKEN: ""
             PORT: "3000"
         restart: unless-stopped
 
     server:
         image: ghcr.io/openstatushq/openstatus-server:latest
         environment:
-            <<: *common-env
+            DATABASE_URL: http://libsql:8080
+            DATABASE_AUTH_TOKEN: ""
+            AUTH_SECRET: "ky7A+ktxQ3qA3WYOkRS0At44yu89c/2OrBVrpCg8fzc="
+            AUTH_URL: https://uptime.eugenelominos.com
+            NEXTAUTH_URL: https://uptime.eugenelominos.com
+            AUTH_TRUST_HOST: "true"
+            SELF_HOST: "true"
+            NEXT_PUBLIC_URL: https://uptime.eugenelominos.com
+            NODE_ENV: production
+            FLY_REGION: self-hosted
+            RESEND_API_KEY: placeholder
+            AUTH_GITHUB_ID: "Ov23liwUnubrWftg3J12"
+            AUTH_GITHUB_SECRET: "242b74d68045b8a77493a77a0a45b28050f92afa"
+            STRIPE_SECRET_KEY: ""
+            NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: ""
+            STRIPE_WEBHOOK_SECRET_KEY: ""
+            PROJECT_ID_VERCEL: ""
+            TEAM_ID_VERCEL: ""
+            VERCEL_AUTH_BEARER_TOKEN: ""
+            TINY_BIRD_API_KEY: ""
+            TINYBIRD_URL: http://tinybird-local:7181
+            CRON_SECRET: openstatus-self-hosted-cron-secret
+            UNKEY_TOKEN: ""
+            UNKEY_API_ID: ""
+            UPSTASH_REDIS_REST_URL: ""
+            UPSTASH_REDIS_REST_TOKEN: ""
+            QSTASH_CURRENT_SIGNING_KEY: ""
+            QSTASH_NEXT_SIGNING_KEY: ""
+            QSTASH_TOKEN: ""
+            QSTASH_URL: ""
+            BLOB_READ_WRITE_TOKEN: ""
+            SUPER_ADMIN_TOKEN: ""
+            SCREENSHOT_SERVICE_URL: ""
+            OPENSTATUS_INGEST_URL: ""
+            NEXT_PUBLIC_OPENPANEL_CLIENT_ID: ""
+            OPENPANEL_CLIENT_SECRET: ""
+            NEXT_PUBLIC_SENTRY_DSN: ""
+            SENTRY_AUTH_TOKEN: ""
             PORT: "3000"
         restart: unless-stopped
 
@@ -123,7 +122,8 @@ services:
     checker:
         image: ghcr.io/openstatushq/openstatus-checker:latest
         environment:
-            <<: *common-env
+            DATABASE_URL: http://libsql:8080
+            DATABASE_AUTH_TOKEN: ""
             PORT: "8080"
         restart: unless-stopped
 
@@ -132,10 +132,46 @@ services:
         ports:
             - "3002:3000"
         environment:
-            <<: *common-env
+            DATABASE_URL: http://libsql:8080
+            DATABASE_AUTH_TOKEN: ""
+            AUTH_SECRET: "ky7A+ktxQ3qA3WYOkRS0At44yu89c/2OrBVrpCg8fzc="
+            AUTH_URL: https://uptime.eugenelominos.com
+            NEXTAUTH_URL: https://uptime.eugenelominos.com
+            AUTH_TRUST_HOST: "true"
+            SELF_HOST: "true"
+            NEXT_PUBLIC_URL: https://uptime.eugenelominos.com
+            NODE_ENV: production
+            FLY_REGION: self-hosted
+            RESEND_API_KEY: placeholder
+            AUTH_GITHUB_ID: "Ov23liwUnubrWftg3J12"
+            AUTH_GITHUB_SECRET: "242b74d68045b8a77493a77a0a45b28050f92afa"
+            STRIPE_SECRET_KEY: ""
+            NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: ""
+            STRIPE_WEBHOOK_SECRET_KEY: ""
+            PROJECT_ID_VERCEL: ""
+            TEAM_ID_VERCEL: ""
+            VERCEL_AUTH_BEARER_TOKEN: ""
+            TINY_BIRD_API_KEY: ""
+            TINYBIRD_URL: http://tinybird-local:7181
+            CRON_SECRET: openstatus-self-hosted-cron-secret
+            UNKEY_TOKEN: ""
+            UNKEY_API_ID: ""
+            UPSTASH_REDIS_REST_URL: ""
+            UPSTASH_REDIS_REST_TOKEN: ""
+            QSTASH_CURRENT_SIGNING_KEY: ""
+            QSTASH_NEXT_SIGNING_KEY: ""
+            QSTASH_TOKEN: ""
+            QSTASH_URL: ""
+            BLOB_READ_WRITE_TOKEN: ""
+            SUPER_ADMIN_TOKEN: ""
+            SCREENSHOT_SERVICE_URL: ""
+            OPENSTATUS_INGEST_URL: ""
+            NEXT_PUBLIC_OPENPANEL_CLIENT_ID: ""
+            OPENPANEL_CLIENT_SECRET: ""
+            NEXT_PUBLIC_SENTRY_DSN: ""
+            SENTRY_AUTH_TOKEN: ""
             PORT: "3000"
             HOSTNAME: 0.0.0.0
-            AUTH_TRUST_HOST: "true"
         restart: unless-stopped
 
     status-page:
@@ -143,8 +179,44 @@ services:
         ports:
             - "3003:3000"
         environment:
-            <<: *common-env
+            DATABASE_URL: http://libsql:8080
+            DATABASE_AUTH_TOKEN: ""
+            AUTH_SECRET: "ky7A+ktxQ3qA3WYOkRS0At44yu89c/2OrBVrpCg8fzc="
+            AUTH_URL: https://uptime.eugenelominos.com
+            NEXTAUTH_URL: https://uptime.eugenelominos.com
+            AUTH_TRUST_HOST: "true"
+            SELF_HOST: "true"
+            NEXT_PUBLIC_URL: https://uptime.eugenelominos.com
+            NODE_ENV: production
+            FLY_REGION: self-hosted
+            RESEND_API_KEY: placeholder
+            AUTH_GITHUB_ID: "Ov23liwUnubrWftg3J12"
+            AUTH_GITHUB_SECRET: "242b74d68045b8a77493a77a0a45b28050f92afa"
+            STRIPE_SECRET_KEY: ""
+            NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: ""
+            STRIPE_WEBHOOK_SECRET_KEY: ""
+            PROJECT_ID_VERCEL: ""
+            TEAM_ID_VERCEL: ""
+            VERCEL_AUTH_BEARER_TOKEN: ""
+            TINY_BIRD_API_KEY: ""
+            TINYBIRD_URL: http://tinybird-local:7181
+            CRON_SECRET: openstatus-self-hosted-cron-secret
+            UNKEY_TOKEN: ""
+            UNKEY_API_ID: ""
+            UPSTASH_REDIS_REST_URL: ""
+            UPSTASH_REDIS_REST_TOKEN: ""
+            QSTASH_CURRENT_SIGNING_KEY: ""
+            QSTASH_NEXT_SIGNING_KEY: ""
+            QSTASH_TOKEN: ""
+            QSTASH_URL: ""
+            BLOB_READ_WRITE_TOKEN: ""
+            SUPER_ADMIN_TOKEN: ""
+            SCREENSHOT_SERVICE_URL: ""
+            OPENSTATUS_INGEST_URL: ""
+            NEXT_PUBLIC_OPENPANEL_CLIENT_ID: ""
+            OPENPANEL_CLIENT_SECRET: ""
+            NEXT_PUBLIC_SENTRY_DSN: ""
+            SENTRY_AUTH_TOKEN: ""
             PORT: "3000"
             HOSTNAME: 0.0.0.0
-            AUTH_TRUST_HOST: "true"
         restart: unless-stopped
