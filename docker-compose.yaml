@@ -6,6 +6,9 @@ x-common-env: &common-env
     DATABASE_URL: http://libsql:8080
     DATABASE_AUTH_TOKEN: ""
     AUTH_SECRET: ${AUTH_SECRET:-changeme-generate-with-openssl-rand-base64-32}
+    AUTH_URL: https://uptime.eugenelominos.com
+    NEXTAUTH_URL: https://uptime.eugenelominos.com
+    AUTH_TRUST_HOST: "true"
     SELF_HOST: "true"
     NEXT_PUBLIC_URL: ${NEXT_PUBLIC_URL:-https://uptime.eugenelominos.com}
     NODE_ENV: production
