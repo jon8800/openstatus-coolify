@@ -20,7 +20,11 @@ services:
         environment:
             - SQLD_NODE=primary
         healthcheck:
-            test: ["CMD-SHELL", "curl -f http://localhost:8080/ || exit 1"]
+            test:
+                [
+                    "CMD-SHELL",
+                    "perl -e 'use IO::Socket::INET; exit(IO::Socket::INET->new(PeerAddr=>\"127.0.0.1:8080\",Timeout=>1) ? 0 : 1);'",
+                ]
             interval: 10s
             timeout: 5s
             retries: 5
