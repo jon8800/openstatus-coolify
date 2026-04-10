@@ -24,26 +24,29 @@ services:
 
     tinybird-deploy:
         image: python:3.11-slim
-        entrypoint: ["sh", "-c"]
+        entrypoint: ["bash", "-c"]
         command:
             - |
+              set -e
               echo "Installing dependencies..."
-              pip install -q tinybird-cli
-              apt-get update -qq && apt-get install -y -qq git curl jq > /dev/null 2>&1
+              apt-get update -qq && apt-get install -y -qq git curl > /dev/null 2>&1
+              echo "Installing TinyBird CLI..."
+              curl -sSL https://install.tinybird.co | bash
+              export PATH="$$PATH:$$HOME/.local/bin:/root/.local/bin"
               echo "Waiting for TinyBird to be ready..."
               until curl -sf http://tinybird-local:7181/tokens > /dev/null 2>&1; do
                 echo "  TinyBird not ready yet, waiting..."
                 sleep 3
               done
               echo "Fetching TinyBird admin token..."
-              TB_TOKEN=$(curl -s http://tinybird-local:7181/tokens | python3 -c "import sys,json; print(json.load(sys.stdin)['admin_token'])")
-              echo "Token: $${TB_TOKEN:0:20}..."
+              TB_TOKEN=$$(curl -s http://tinybird-local:7181/tokens | python3 -c "import sys,json; print(json.load(sys.stdin)['admin_token'])")
+              echo "Token fetched: $${TB_TOKEN:0:20}..."
               echo "Cloning OpenStatus repo..."
               git clone --depth 1 https://github.com/openstatusHQ/openstatus.git /app/openstatus
               cd /app/openstatus/packages/tinybird
               echo "Deploying TinyBird schema..."
-              tb --host http://tinybird-local:7181 --token "$$TB_TOKEN" deploy --populate --force 2>&1 || true
-              echo "TinyBird deploy complete!"
+              tb --host http://tinybird-local:7181 --token "$$TB_TOKEN" deploy --populate --force 2>&1
+              echo "TinyBird schema deployed!"
         depends_on:
             - tinybird-local
         restart: "no"
@@ -72,7 +75,7 @@ services:
             PROJECT_ID_VERCEL: ""
             TEAM_ID_VERCEL: ""
             VERCEL_AUTH_BEARER_TOKEN: ""
-            TINY_BIRD_API_KEY: "p.eyJ1IjogImI3NWY0M2ZmLTZlMjktNDZhZC1iODQ1LWFiMDc2YWU2MzY4MSIsICJpZCI6ICI2ZWYyZjgxZC1iYzk0LTQwZTItYTAzMy0zOGEzNGE0OWMzODgiLCAiaG9zdCI6IG51bGx9.m7tK_YzCK0OPpJ-_U4sbczE9B04wRvMt-kqRQGfzLP0"
+            TINY_BIRD_API_KEY: "p.eyJ1IjogImI3NWY0M2ZmLTZlMjktNDZhZC1iODQ1LWFiMDc2YWU2MzY4MSIsICJpZCI6ICI4YTJkYjhjOS04MDhlLTQ3ZWQtOGQzYS0wYjUwNDg5OWYzNjIiLCAiaG9zdCI6IG51bGx9.EM0JqHv9wGb7Y2UFoRW-vwx_7ZrlbFXfeStyKqzqs2w"
             TINYBIRD_URL: http://tinybird-local:7181
             CRON_SECRET: openstatus-self-hosted-cron-secret
             UNKEY_TOKEN: ""
@@ -116,7 +119,7 @@ services:
             PROJECT_ID_VERCEL: ""
             TEAM_ID_VERCEL: ""
             VERCEL_AUTH_BEARER_TOKEN: ""
-            TINY_BIRD_API_KEY: "p.eyJ1IjogImI3NWY0M2ZmLTZlMjktNDZhZC1iODQ1LWFiMDc2YWU2MzY4MSIsICJpZCI6ICI2ZWYyZjgxZC1iYzk0LTQwZTItYTAzMy0zOGEzNGE0OWMzODgiLCAiaG9zdCI6IG51bGx9.m7tK_YzCK0OPpJ-_U4sbczE9B04wRvMt-kqRQGfzLP0"
+            TINY_BIRD_API_KEY: "p.eyJ1IjogImI3NWY0M2ZmLTZlMjktNDZhZC1iODQ1LWFiMDc2YWU2MzY4MSIsICJpZCI6ICI4YTJkYjhjOS04MDhlLTQ3ZWQtOGQzYS0wYjUwNDg5OWYzNjIiLCAiaG9zdCI6IG51bGx9.EM0JqHv9wGb7Y2UFoRW-vwx_7ZrlbFXfeStyKqzqs2w"
             TINYBIRD_URL: http://tinybird-local:7181
             CRON_SECRET: openstatus-self-hosted-cron-secret
             UNKEY_TOKEN: ""
@@ -179,7 +182,7 @@ services:
             PROJECT_ID_VERCEL: ""
             TEAM_ID_VERCEL: ""
             VERCEL_AUTH_BEARER_TOKEN: ""
-            TINY_BIRD_API_KEY: "p.eyJ1IjogImI3NWY0M2ZmLTZlMjktNDZhZC1iODQ1LWFiMDc2YWU2MzY4MSIsICJpZCI6ICI2ZWYyZjgxZC1iYzk0LTQwZTItYTAzMy0zOGEzNGE0OWMzODgiLCAiaG9zdCI6IG51bGx9.m7tK_YzCK0OPpJ-_U4sbczE9B04wRvMt-kqRQGfzLP0"
+            TINY_BIRD_API_KEY: "p.eyJ1IjogImI3NWY0M2ZmLTZlMjktNDZhZC1iODQ1LWFiMDc2YWU2MzY4MSIsICJpZCI6ICI4YTJkYjhjOS04MDhlLTQ3ZWQtOGQzYS0wYjUwNDg5OWYzNjIiLCAiaG9zdCI6IG51bGx9.EM0JqHv9wGb7Y2UFoRW-vwx_7ZrlbFXfeStyKqzqs2w"
             TINYBIRD_URL: http://tinybird-local:7181
             CRON_SECRET: openstatus-self-hosted-cron-secret
             UNKEY_TOKEN: ""
@@ -226,7 +229,7 @@ services:
             PROJECT_ID_VERCEL: ""
             TEAM_ID_VERCEL: ""
             VERCEL_AUTH_BEARER_TOKEN: ""
-            TINY_BIRD_API_KEY: "p.eyJ1IjogImI3NWY0M2ZmLTZlMjktNDZhZC1iODQ1LWFiMDc2YWU2MzY4MSIsICJpZCI6ICI2ZWYyZjgxZC1iYzk0LTQwZTItYTAzMy0zOGEzNGE0OWMzODgiLCAiaG9zdCI6IG51bGx9.m7tK_YzCK0OPpJ-_U4sbczE9B04wRvMt-kqRQGfzLP0"
+            TINY_BIRD_API_KEY: "p.eyJ1IjogImI3NWY0M2ZmLTZlMjktNDZhZC1iODQ1LWFiMDc2YWU2MzY4MSIsICJpZCI6ICI4YTJkYjhjOS04MDhlLTQ3ZWQtOGQzYS0wYjUwNDg5OWYzNjIiLCAiaG9zdCI6IG51bGx9.EM0JqHv9wGb7Y2UFoRW-vwx_7ZrlbFXfeStyKqzqs2w"
             TINYBIRD_URL: http://tinybird-local:7181
             CRON_SECRET: openstatus-self-hosted-cron-secret
             UNKEY_TOKEN: ""
