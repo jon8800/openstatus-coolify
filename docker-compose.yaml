@@ -2,6 +2,15 @@ volumes:
     libsql-data:
     workflows-data:
 
+x-common-env: &common-env
+    DATABASE_URL: http://libsql:8080
+    AUTH_SECRET: ${AUTH_SECRET:-changeme-generate-with-openssl-rand-base64-32}
+    SELF_HOST: "true"
+    NEXT_PUBLIC_URL: ${NEXT_PUBLIC_URL:-http://localhost:3002}
+    NODE_ENV: production
+    FLY_REGION: self-hosted
+    RESEND_API_KEY: ${RESEND_API_KEY:-placeholder}
+
 services:
     libsql:
         image: ghcr.io/tursodatabase/libsql-server:latest
@@ -17,8 +26,8 @@ services:
                 ]
             interval: 10s
             timeout: 5s
-            retries: 5
-            start_period: 10s
+            retries: 10
+            start_period: 15s
         restart: unless-stopped
 
     tinybird-local:
@@ -30,8 +39,8 @@ services:
             test: ["CMD", "curl", "-f", "http://localhost:7181/"]
             interval: 15s
             timeout: 5s
-            retries: 5
-            start_period: 20s
+            retries: 10
+            start_period: 30s
         restart: unless-stopped
 
     workflows:
@@ -39,8 +48,8 @@ services:
         volumes:
             - workflows-data:/app/data
         environment:
-            - DATABASE_URL=http://libsql:8080
-            - PORT=3000
+            <<: *common-env
+            PORT: "3000"
         depends_on:
             libsql:
                 condition: service_healthy
@@ -48,15 +57,15 @@ services:
             test: ["CMD-SHELL", "curl -f http://localhost:3000/ping || exit 1"]
             interval: 15s
             timeout: 10s
-            retries: 3
-            start_period: 30s
+            retries: 10
+            start_period: 60s
         restart: unless-stopped
 
     server:
         image: ghcr.io/openstatushq/openstatus-server:latest
         environment:
-            - DATABASE_URL=http://libsql:8080
-            - PORT=3000
+            <<: *common-env
+            PORT: "3000"
         depends_on:
             workflows:
                 condition: service_healthy
@@ -66,17 +75,17 @@ services:
             test: ["CMD-SHELL", "curl -f http://localhost:3000/ping || exit 1"]
             interval: 15s
             timeout: 10s
-            retries: 3
-            start_period: 30s
+            retries: 10
+            start_period: 60s
         restart: unless-stopped
 
     private-location:
         image: ghcr.io/openstatushq/openstatus-private-location:latest
         environment:
-            - DB_URL=http://libsql:8080
-            - TINYBIRD_URL=http://tinybird-local:7181
-            - GIN_MODE=release
-            - PORT=8080
+            DB_URL: http://libsql:8080
+            TINYBIRD_URL: http://tinybird-local:7181
+            GIN_MODE: release
+            PORT: "8080"
         depends_on:
             server:
                 condition: service_healthy
@@ -84,15 +93,15 @@ services:
             test: ["CMD", "wget", "--spider", "-q", "http://localhost:8080/health"]
             interval: 15s
             timeout: 10s
-            retries: 3
-            start_period: 30s
+            retries: 10
+            start_period: 60s
         restart: unless-stopped
 
     checker:
         image: ghcr.io/openstatushq/openstatus-checker:latest
         environment:
-            - DATABASE_URL=http://libsql:8080
-            - PORT=8080
+            <<: *common-env
+            PORT: "8080"
         depends_on:
             server:
                 condition: service_healthy
@@ -100,8 +109,8 @@ services:
             test: ["CMD-SHELL", "curl -f http://localhost:8080/health || exit 1"]
             interval: 15s
             timeout: 10s
-            retries: 3
-            start_period: 30s
+            retries: 10
+            start_period: 60s
         restart: unless-stopped
 
     dashboard:
@@ -109,10 +118,10 @@ services:
         ports:
             - "3002:3000"
         environment:
-            - DATABASE_URL=http://libsql:8080
-            - PORT=3000
-            - HOSTNAME=0.0.0.0
-            - AUTH_TRUST_HOST=true
+            <<: *common-env
+            PORT: "3000"
+            HOSTNAME: 0.0.0.0
+            AUTH_TRUST_HOST: "true"
         depends_on:
             workflows:
                 condition: service_healthy
@@ -124,8 +133,8 @@ services:
             test: ["CMD-SHELL", "curl -f http://localhost:3000/ || exit 1"]
             interval: 15s
             timeout: 10s
-            retries: 3
-            start_period: 45s
+            retries: 10
+            start_period: 90s
         restart: unless-stopped
 
     status-page:
@@ -133,10 +142,10 @@ services:
         ports:
             - "3003:3000"
         environment:
-            - DATABASE_URL=http://libsql:8080
-            - PORT=3000
-            - HOSTNAME=0.0.0.0
-            - AUTH_TRUST_HOST=true
+            <<: *common-env
+            PORT: "3000"
+            HOSTNAME: 0.0.0.0
+            AUTH_TRUST_HOST: "true"
         depends_on:
             workflows:
                 condition: service_healthy
@@ -148,6 +157,6 @@ services:
             test: ["CMD-SHELL", "curl -f http://localhost:3000/ || exit 1"]
             interval: 15s
             timeout: 10s
-            retries: 3
-            start_period: 45s
+            retries: 10
+            start_period: 90s
         restart: unless-stopped
