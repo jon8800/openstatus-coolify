@@ -4,12 +4,39 @@ volumes:
 
 x-common-env: &common-env
     DATABASE_URL: http://libsql:8080
+    DATABASE_AUTH_TOKEN: ""
     AUTH_SECRET: ${AUTH_SECRET:-changeme-generate-with-openssl-rand-base64-32}
     SELF_HOST: "true"
     NEXT_PUBLIC_URL: ${NEXT_PUBLIC_URL:-http://localhost:3002}
     NODE_ENV: production
     FLY_REGION: self-hosted
     RESEND_API_KEY: ${RESEND_API_KEY:-placeholder}
+    # Optional services - placeholders to prevent validation errors
+    STRIPE_SECRET_KEY: ""
+    NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: ""
+    STRIPE_WEBHOOK_SECRET_KEY: ""
+    PROJECT_ID_VERCEL: ""
+    TEAM_ID_VERCEL: ""
+    VERCEL_AUTH_BEARER_TOKEN: ""
+    TINY_BIRD_API_KEY: ""
+    TINYBIRD_URL: http://tinybird-local:7181
+    CRON_SECRET: "openstatus-self-hosted-cron-secret"
+    UNKEY_TOKEN: ""
+    UNKEY_API_ID: ""
+    UPSTASH_REDIS_REST_URL: ""
+    UPSTASH_REDIS_REST_TOKEN: ""
+    QSTASH_CURRENT_SIGNING_KEY: ""
+    QSTASH_NEXT_SIGNING_KEY: ""
+    QSTASH_TOKEN: ""
+    QSTASH_URL: ""
+    BLOB_READ_WRITE_TOKEN: ""
+    SUPER_ADMIN_TOKEN: ""
+    SCREENSHOT_SERVICE_URL: ""
+    OPENSTATUS_INGEST_URL: ""
+    NEXT_PUBLIC_OPENPANEL_CLIENT_ID: ""
+    OPENPANEL_CLIENT_SECRET: ""
+    NEXT_PUBLIC_SENTRY_DSN: ""
+    SENTRY_AUTH_TOKEN: ""
 
 services:
     libsql:
