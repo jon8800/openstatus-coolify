@@ -1,20 +1,10 @@
-networks:
-    openstatus:
-        driver: bridge
-        name: openstatus
-
 volumes:
     libsql-data:
-        name: openstatus-libsql-data
     workflows-data:
-        name: openstatus-workflows-data
 
 services:
     libsql:
-        container_name: openstatus-libsql
         image: ghcr.io/tursodatabase/libsql-server:latest
-        networks:
-            - openstatus
         volumes:
             - libsql-data:/var/lib/sqld
         environment:
@@ -32,11 +22,8 @@ services:
         restart: unless-stopped
 
     tinybird-local:
-        container_name: openstatus-tinybird
         image: tinybirdco/tinybird-local:latest
         platform: linux/amd64
-        networks:
-            - openstatus
         environment:
             - COMPATIBILITY_MODE=1
         healthcheck:
@@ -48,10 +35,7 @@ services:
         restart: unless-stopped
 
     workflows:
-        container_name: openstatus-workflows
         image: ghcr.io/openstatushq/openstatus-workflows:latest
-        networks:
-            - openstatus
         volumes:
             - workflows-data:/app/data
         environment:
@@ -69,10 +53,7 @@ services:
         restart: unless-stopped
 
     server:
-        container_name: openstatus-server
         image: ghcr.io/openstatushq/openstatus-server:latest
-        networks:
-            - openstatus
         environment:
             - DATABASE_URL=http://libsql:8080
             - PORT=3000
@@ -90,10 +71,7 @@ services:
         restart: unless-stopped
 
     private-location:
-        container_name: openstatus-private-location
         image: ghcr.io/openstatushq/openstatus-private-location:latest
-        networks:
-            - openstatus
         environment:
             - DB_URL=http://libsql:8080
             - TINYBIRD_URL=http://tinybird-local:7181
@@ -111,10 +89,7 @@ services:
         restart: unless-stopped
 
     checker:
-        container_name: openstatus-checker
         image: ghcr.io/openstatushq/openstatus-checker:latest
-        networks:
-            - openstatus
         environment:
             - DATABASE_URL=http://libsql:8080
             - PORT=8080
@@ -130,10 +105,7 @@ services:
         restart: unless-stopped
 
     dashboard:
-        container_name: openstatus-dashboard
         image: ghcr.io/openstatushq/openstatus-dashboard:latest
-        networks:
-            - openstatus
         ports:
             - "3002:3000"
         environment:
@@ -157,10 +129,7 @@ services:
         restart: unless-stopped
 
     status-page:
-        container_name: openstatus-status-page
         image: ghcr.io/openstatushq/openstatus-status-page:latest
-        networks:
-            - openstatus
         ports:
             - "3003:3000"
         environment:
