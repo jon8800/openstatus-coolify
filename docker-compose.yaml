@@ -16,9 +16,31 @@ services:
     tinybird-local:
         image: tinybirdco/tinybird-local:latest
         platform: linux/amd64
+        ports:
+            - "7181:7181"
         environment:
             COMPATIBILITY_MODE: "1"
         restart: unless-stopped
+
+    tinybird-deploy:
+        image: python:3.11-slim
+        entrypoint: ["sh", "-c"]
+        command:
+            - |
+              echo "Installing TinyBird CLI..."
+              pip install -q tinybird-cli
+              echo "Cloning OpenStatus repo for TinyBird schema..."
+              apt-get update -qq && apt-get install -y -qq git > /dev/null 2>&1
+              git clone --depth 1 https://github.com/openstatusHQ/openstatus.git /app/openstatus
+              cd /app/openstatus/packages/tinybird
+              echo "Deploying TinyBird schema..."
+              tb --host http://tinybird-local:7181 --token "local" deploy --populate --force
+              echo "Getting admin token..."
+              tb --host http://tinybird-local:7181 --token "local" token ls
+              echo "TinyBird schema deployed!"
+        depends_on:
+            - tinybird-local
+        restart: "no"
 
     workflows:
         image: ghcr.io/openstatushq/openstatus-workflows:latest
