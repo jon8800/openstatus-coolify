@@ -49,8 +49,8 @@ services:
             CRON_SECRET: openstatus-self-hosted-cron-secret
             UNKEY_TOKEN: ""
             UNKEY_API_ID: ""
-            UPSTASH_REDIS_REST_URL: ""
-            UPSTASH_REDIS_REST_TOKEN: ""
+            UPSTASH_REDIS_REST_URL: "https://localhost:6379"
+            UPSTASH_REDIS_REST_TOKEN: "disabled"
             QSTASH_CURRENT_SIGNING_KEY: ""
             QSTASH_NEXT_SIGNING_KEY: ""
             QSTASH_TOKEN: ""
@@ -93,8 +93,8 @@ services:
             CRON_SECRET: openstatus-self-hosted-cron-secret
             UNKEY_TOKEN: ""
             UNKEY_API_ID: ""
-            UPSTASH_REDIS_REST_URL: ""
-            UPSTASH_REDIS_REST_TOKEN: ""
+            UPSTASH_REDIS_REST_URL: "https://localhost:6379"
+            UPSTASH_REDIS_REST_TOKEN: "disabled"
             QSTASH_CURRENT_SIGNING_KEY: ""
             QSTASH_NEXT_SIGNING_KEY: ""
             QSTASH_TOKEN: ""
@@ -156,8 +156,8 @@ services:
             CRON_SECRET: openstatus-self-hosted-cron-secret
             UNKEY_TOKEN: ""
             UNKEY_API_ID: ""
-            UPSTASH_REDIS_REST_URL: ""
-            UPSTASH_REDIS_REST_TOKEN: ""
+            UPSTASH_REDIS_REST_URL: "https://localhost:6379"
+            UPSTASH_REDIS_REST_TOKEN: "disabled"
             QSTASH_CURRENT_SIGNING_KEY: ""
             QSTASH_NEXT_SIGNING_KEY: ""
             QSTASH_TOKEN: ""
@@ -203,8 +203,8 @@ services:
             CRON_SECRET: openstatus-self-hosted-cron-secret
             UNKEY_TOKEN: ""
             UNKEY_API_ID: ""
-            UPSTASH_REDIS_REST_URL: ""
-            UPSTASH_REDIS_REST_TOKEN: ""
+            UPSTASH_REDIS_REST_URL: "https://localhost:6379"
+            UPSTASH_REDIS_REST_TOKEN: "disabled"
             QSTASH_CURRENT_SIGNING_KEY: ""
             QSTASH_NEXT_SIGNING_KEY: ""
             QSTASH_TOKEN: ""
