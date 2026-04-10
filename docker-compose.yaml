@@ -47,6 +47,8 @@ x-common-env: &common-env
 services:
     libsql:
         image: ghcr.io/tursodatabase/libsql-server:latest
+        ports:
+            - "9080:8080"
         volumes:
             - libsql-data:/var/lib/sqld
         environment:
