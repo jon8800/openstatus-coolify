@@ -18,16 +18,6 @@ services:
             - libsql-data:/var/lib/sqld
         environment:
             - SQLD_NODE=primary
-        healthcheck:
-            test:
-                [
-                    "CMD-SHELL",
-                    "perl -e 'use IO::Socket::INET; exit(IO::Socket::INET->new(PeerAddr=>\"127.0.0.1:8080\",Timeout=>1) ? 0 : 1);'",
-                ]
-            interval: 10s
-            timeout: 5s
-            retries: 10
-            start_period: 15s
         restart: unless-stopped
 
     tinybird-local:
@@ -35,12 +25,6 @@ services:
         platform: linux/amd64
         environment:
             - COMPATIBILITY_MODE=1
-        healthcheck:
-            test: ["CMD", "curl", "-f", "http://localhost:7181/"]
-            interval: 15s
-            timeout: 5s
-            retries: 10
-            start_period: 30s
         restart: unless-stopped
 
     workflows:
@@ -50,15 +34,6 @@ services:
         environment:
             <<: *common-env
             PORT: "3000"
-        depends_on:
-            libsql:
-                condition: service_healthy
-        healthcheck:
-            test: ["CMD-SHELL", "curl -f http://localhost:3000/ping || exit 1"]
-            interval: 15s
-            timeout: 10s
-            retries: 10
-            start_period: 60s
         restart: unless-stopped
 
     server:
@@ -66,17 +41,6 @@ services:
         environment:
             <<: *common-env
             PORT: "3000"
-        depends_on:
-            workflows:
-                condition: service_healthy
-            libsql:
-                condition: service_healthy
-        healthcheck:
-            test: ["CMD-SHELL", "curl -f http://localhost:3000/ping || exit 1"]
-            interval: 15s
-            timeout: 10s
-            retries: 10
-            start_period: 60s
         restart: unless-stopped
 
     private-location:
@@ -86,15 +50,6 @@ services:
             TINYBIRD_URL: http://tinybird-local:7181
             GIN_MODE: release
             PORT: "8080"
-        depends_on:
-            server:
-                condition: service_healthy
-        healthcheck:
-            test: ["CMD", "wget", "--spider", "-q", "http://localhost:8080/health"]
-            interval: 15s
-            timeout: 10s
-            retries: 10
-            start_period: 60s
         restart: unless-stopped
 
     checker:
@@ -102,15 +57,6 @@ services:
         environment:
             <<: *common-env
             PORT: "8080"
-        depends_on:
-            server:
-                condition: service_healthy
-        healthcheck:
-            test: ["CMD-SHELL", "curl -f http://localhost:8080/health || exit 1"]
-            interval: 15s
-            timeout: 10s
-            retries: 10
-            start_period: 60s
         restart: unless-stopped
 
     dashboard:
@@ -122,19 +68,6 @@ services:
             PORT: "3000"
             HOSTNAME: 0.0.0.0
             AUTH_TRUST_HOST: "true"
-        depends_on:
-            workflows:
-                condition: service_healthy
-            libsql:
-                condition: service_healthy
-            server:
-                condition: service_healthy
-        healthcheck:
-            test: ["CMD-SHELL", "curl -f http://localhost:3000/ || exit 1"]
-            interval: 15s
-            timeout: 10s
-            retries: 10
-            start_period: 90s
         restart: unless-stopped
 
     status-page:
@@ -146,17 +79,4 @@ services:
             PORT: "3000"
             HOSTNAME: 0.0.0.0
             AUTH_TRUST_HOST: "true"
-        depends_on:
-            workflows:
-                condition: service_healthy
-            libsql:
-                condition: service_healthy
-            server:
-                condition: service_healthy
-        healthcheck:
-            test: ["CMD-SHELL", "curl -f http://localhost:3000/ || exit 1"]
-            interval: 15s
-            timeout: 10s
-            retries: 10
-            start_period: 90s
         restart: unless-stopped
