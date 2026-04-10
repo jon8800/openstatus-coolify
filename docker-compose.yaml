@@ -140,7 +140,7 @@ services:
             AUTH_TRUST_HOST: "true"
             SELF_HOST: "true"
             NEXT_PUBLIC_URL: https://uptime.eugenelominos.com
-            NODE_ENV: production
+            NODE_ENV: development
             FLY_REGION: self-hosted
             RESEND_API_KEY: placeholder
             AUTH_GITHUB_ID: "Ov23liwUnubrWftg3J12"
